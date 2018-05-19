@@ -1,3 +1,5 @@
+require_relative 'throttler/matcher'
+
 class Throttler
   def initialize(app)
     @app = app
@@ -19,16 +21,39 @@ class Throttler
   end
 
   class << self
-    def blacklisted?(_req)
-      false
+    def blacklisted?(req)
+      blacklists.any?{ |_, matcher| matcher.(req) }
     end
 
-    def whitelisted?(_req)
-      false
+    def whitelisted?(req)
+      whitelists.any?{ |_, matcher| matcher.(req) }
     end
 
     def throttled?(_req)
       [false, 0]
+    end
+
+    def blacklist(name, &block)
+      blacklists[name] = Matcher.new('blacklist', name, block)
+    end
+
+    def whitelist(name, &block)
+      whitelists[name] = Matcher.new('whitelist', name, block)
+    end
+
+    def throttle(name, &block)
+    end
+
+    def blacklists
+      @blacklists = {}
+    end
+
+    def whitelists
+      @whitelists = {}
+    end
+
+    def throttles
+      @throttles = {}
     end
   end
 end
