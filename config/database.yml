@@ -1,0 +1,8 @@
+default: &default
+  url: <%= ENV['DATABASE_URL'] %>
+development:
+  <<: *default
+test:
+  url: <%= ENV['DATABASE_TEST_URL'] %>
+production:
+  <<: *default
