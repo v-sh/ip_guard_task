@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 require 'support/throttler'
 
 describe ::Throttler do
@@ -14,13 +14,13 @@ describe ::Throttler do
 
   shared_context 'request whitelisted' do
     before do
-      allow(Throttler).to receive(:whitelisted?).and_return(true)
+      Throttler.whitelist(ip)
     end
   end
 
   context 'when request is blacklisted' do
     before do
-      allow(Throttler).to receive(:blacklisted?).and_return(true)
+      Throttler.blacklist(ip)
     end
 
     it 'asks you to retry' do
