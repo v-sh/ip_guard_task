@@ -2,8 +2,9 @@ shared_context 'ip guard' do
   let(:app) { ->(env) { [200, env, "ok"] } }
   let(:ip) {'1.2.3.4'}
   let!(:throttler) { IpGuard.new(app) }
-  let(:request) { Rack::MockRequest.env_for('example.com/', {'HTTP_X_FORWARDED_FOR' => ip}) }
-  def make_request
+  def make_request(with_ip: nil)
+    with_ip ||= ip
+    request = Rack::MockRequest.env_for('example.com/', {'HTTP_X_FORWARDED_FOR' => with_ip})
     throttler.(request)
   end
 

@@ -23,7 +23,7 @@ class IpGuard
       @store ||= {}
       data = @store[client_id]
       if data
-        data = {counter: 0, expires: period.from_now} if data[:expires] <= Time.current
+        data = {counter: 0, expires: period.seconds.from_now} if data[:expires] <= Time.current
         @store[client_id] = {counter: data[:counter] + 1, expires: data[:expires]}
       else
         @store[client_id] = {counter: 1, expires: period.seconds.from_now}
