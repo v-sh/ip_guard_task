@@ -9,6 +9,7 @@ services:
       - gem_modules:/usr/local/bundle
     links:
       - db
+      - redis
     env_file:
       - .env
     command: 'sleep infinity'

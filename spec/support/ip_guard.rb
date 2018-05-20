@@ -16,7 +16,8 @@ shared_context 'ip guard' do
   let(:headers) { response[:headers] }
   let(:body) { response[:body] }
 
-  after do
+  before do
     IpGuard.clear!
+    IpGuard.clear_counters!
   end
 end

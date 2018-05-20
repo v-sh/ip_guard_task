@@ -1,4 +1,6 @@
 class IpGuard
+  REDIS_KEY_PREFIX = "ip_guard:throttles:"
+
   def initialize(app)
     @app = app
   end
@@ -44,6 +46,7 @@ class IpGuard
     end
 
     def throttle(name, limit:, period:, &block)
+      raise ArgumentError, 'set redis client before using throttle' unless redis_client
       throttlers[name] = IpGuard::Throttler.new(name, limit, period, block)
     end
 
@@ -52,6 +55,14 @@ class IpGuard
       @whitelists = {}
       @throttles = {}
     end
+
+    def clear_counters!
+      redis_client.keys(REDIS_KEY_PREFIX + "*").each do |key|
+        redis_client.del(key)
+      end
+    end
+
+    attr_accessor :redis_client
 
     def blacklists
       @blacklists ||= {}
@@ -64,5 +75,6 @@ class IpGuard
     def throttlers
       @throttles ||= {}
     end
+
   end
 end

@@ -20,16 +20,16 @@ class IpGuard
     end
 
     def incr(client_id, period)
-      @store ||= {}
-      data = @store[client_id]
-      if data
-        data = {counter: 0, expires: period.seconds.from_now} if data[:expires] <= Time.current
-        @store[client_id] = {counter: data[:counter] + 1, expires: data[:expires]}
-      else
-        @store[client_id] = {counter: 1, expires: period.seconds.from_now}
-      end
-      data = @store[client_id]
-      [data[:counter], data[:expires] - Time.current]
+      function = <<-LUA
+        local current, ttl
+        current = redis.call("incr",KEYS[1])
+        if tonumber(current) == 1 then
+          redis.call("expire",KEYS[1],KEYS[2])
+        end
+        ttl = redis.call("ttl", KEYS[1])
+        return {current, ttl}
+      LUA
+      _current, _ttl = redis_client.eval(function, [key(client_id), period])
     end
 
     def period(req)
@@ -38,6 +38,14 @@ class IpGuard
 
     def limit(req)
       @limit.respond_to?(:call) ? @limit.(req) : @limit
+    end
+
+    def redis_client
+      ::IpGuard.redis_client
+    end
+
+    def key(client_id)
+      IpGuard::REDIS_KEY_PREFIX + @name + ':' + client_id
     end
 
     class << self
