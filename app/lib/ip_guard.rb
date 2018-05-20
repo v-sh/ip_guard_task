@@ -1,4 +1,4 @@
-class Throttler
+class IpGuard
   def initialize(app)
     @app = app
   end
@@ -27,19 +27,24 @@ class Throttler
       whitelists.any?{ |_, matcher| matcher.(req) }
     end
 
-    def throttled?(_req)
+    def throttled?(req)
+      throttlers.each do |_, th|
+        throttled, expires = th.(req)
+        return [throttled, expires] if throttled
+      end
       [false, 0]
     end
 
     def blacklist(name, &block)
-      blacklists[name] = Throttler::Matcher.new('blacklist', name, block)
+      blacklists[name] = IpGuard::Matcher.new('blacklist', name, block)
     end
 
     def whitelist(name, &block)
-      whitelists[name] = Throttler::Matcher.new('whitelist', name, block)
+      whitelists[name] = IpGuard::Matcher.new('whitelist', name, block)
     end
 
-    def throttle(name, &block)
+    def throttle(name, limit:, period:, &block)
+      throttlers[name] = IpGuard::Throttler.new(name, limit, period, block)
     end
 
     def clear!
@@ -56,7 +61,7 @@ class Throttler
       @whitelists ||= {}
     end
 
-    def throttles
+    def throttlers
       @throttles ||= {}
     end
   end

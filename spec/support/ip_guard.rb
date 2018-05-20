@@ -1,12 +1,14 @@
-require_relative '../../app/lib/throttler'
-
-shared_context 'throttler' do
+shared_context 'ip guard' do
   let(:app) { ->(env) { [200, env, "ok"] } }
   let(:ip) {'1.2.3.4'}
-  let!(:throttler) { Throttler.new(app) }
+  let!(:throttler) { IpGuard.new(app) }
   let(:request) { Rack::MockRequest.env_for('example.com/', {'HTTP_X_FORWARDED_FOR' => ip}) }
+  def make_request
+    throttler.(request)
+  end
+
   let(:response) do
-    status, headers, body = throttler.(request)
+    status, headers, body = make_request
     {status: status, headers: headers, body: body}
   end
   let(:status) { response[:status] }
@@ -14,6 +16,6 @@ shared_context 'throttler' do
   let(:body) { response[:body] }
 
   after do
-    Throttler.clear!
+    IpGuard.clear!
   end
 end

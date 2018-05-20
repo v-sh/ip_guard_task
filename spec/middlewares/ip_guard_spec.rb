@@ -1,8 +1,8 @@
 require 'rails_helper'
-require 'support/throttler'
+require 'support/ip_guard'
 
-describe ::Throttler do
-  include_context 'throttler'
+describe ::IpGuard do
+  include_context 'ip guard'
 
   context 'without any setup' do
     it 'calls app' do
@@ -14,13 +14,13 @@ describe ::Throttler do
 
   shared_context 'request whitelisted' do
     before do
-      Throttler.whitelist(ip)
+      IpGuard.whitelist(ip)
     end
   end
 
   context 'when request is blacklisted' do
     before do
-      Throttler.blacklist(ip)
+      IpGuard.blacklist(ip)
     end
 
     it 'asks you to retry' do
@@ -39,7 +39,7 @@ describe ::Throttler do
 
   context 'when request is throttled' do
     before do
-      allow(Throttler).to receive(:throttled?).and_return(true, 10)
+      allow(IpGuard).to receive(:throttled?).and_return(true, 10)
       expect(status).to eq(429)
       expect(body).to eq('Rate limit exceeded. Try again in 10 seconds')
     end

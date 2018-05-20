@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe Throttler::Matcher do
+describe IpGuard::Matcher do
   let(:ip) { "1.2.3.4" }
   let(:request_env) { Rack::MockRequest.env_for('example.com/', {'HTTP_X_FORWARDED_FOR' => ip}) }
   let(:request) { Rack::Request.new(request_env) }
@@ -9,7 +9,7 @@ describe Throttler::Matcher do
     context 'with wrong params' do
       it do
         expect do
-          Throttler::Matcher.new("whitelist", "name")
+          IpGuard::Matcher.new("whitelist", "name")
         end.to raise_error(ArgumentError)
       end
     end
@@ -18,7 +18,7 @@ describe Throttler::Matcher do
   describe '#call' do
     context 'when configured with ip address' do
       let(:matcher_string) { '1.2.3.4' }
-      let(:matcher) { Throttler::Matcher.new("whitelist", matcher_string) }
+      let(:matcher) { IpGuard::Matcher.new("whitelist", matcher_string) }
 
       context 'called with matching ip' do
         it 'returns true' do
@@ -38,7 +38,7 @@ describe Throttler::Matcher do
 
     context 'when configured with ip subnet' do
       let(:matcher_string) { '1.2.3.0/24' }
-      let(:matcher) { Throttler::Matcher.new("whitelist", matcher_string) }
+      let(:matcher) { IpGuard::Matcher.new("whitelist", matcher_string) }
 
       context 'called with matching ip' do
         it 'returns true' do
@@ -58,7 +58,7 @@ describe Throttler::Matcher do
 
     context 'when configured with block' do
       let(:block) { Proc.new {true} }
-      let(:matcher) { Throttler::Matcher.new("whitelist", 'custom matcher', block) }
+      let(:matcher) { IpGuard::Matcher.new("whitelist", 'custom matcher', block) }
 
       it 'calls block' do
         expect(block).to receive(:call).with(request)

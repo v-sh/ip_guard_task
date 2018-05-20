@@ -1,4 +1,4 @@
-class Throttler
+class IpGuard
   class Matcher
     def initialize(type, name, block = nil)
       @type = type

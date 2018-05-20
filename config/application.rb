@@ -1,7 +1,7 @@
 require_relative 'boot'
 
 require 'rails/all'
-require_dependency 'app/lib/throttler'
+require_dependency 'app/lib/ip_guard'
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
@@ -16,6 +16,6 @@ module App
     # Application configuration can go into files in config/initializers
     # -- all .rb files in that directory are automatically loaded after loading
     # the framework and any gems in your application.
-    config.middleware.use ::Throttler
+    config.middleware.use ::IpGuard
   end
 end
