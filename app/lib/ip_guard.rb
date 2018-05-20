@@ -10,14 +10,32 @@ class IpGuard
 
     return @app.(env) if self.class.whitelisted?(req)
 
-    return [429, {'Content-Type' => 'text/plain'}, ["Rate limit exceeded. Try again in #{1.day} seconds"]] if self.class.blacklisted?(req)
+    if self.class.blacklisted?(req)
+      log(req)
+      return throttled_response(1.day)
+    end
 
     throttled, expires = self.class.throttled?(req)
     if throttled
-      [429, {'Content-Type' => 'text/plain'}, ["Rate limit exceeded. Try again in #{expires} seconds"]]
+      log(req)
+      throttled_response(expires)
     else
       @app.(env)
     end
+  end
+
+  def log(req)
+    client_ip = req.env["ip_guard.client_ip"]
+    if (name = req.env['ip_guard.blacklist'])
+      self.class.logger.info("IpGuard: #{client_ip} is blocked by '#{name}'")
+    end
+    if (name = req.env['ip_guard.throttled'])
+      self.class.logger.info("IpGuard: #{client_ip} was throttled by '#{name}'")
+    end
+  end
+
+  def throttled_response(expires)
+    [429, {'Content-Type' => 'text/plain'}, ["Rate limit exceeded. Try again in #{expires} seconds"]]
   end
 
   class << self
@@ -46,7 +64,6 @@ class IpGuard
     end
 
     def throttle(name, limit:, period:, &block)
-      raise ArgumentError, 'set redis client before using throttle' unless redis_client
       throttlers[name] = IpGuard::Throttler.new(name, limit, period, block)
     end
 
@@ -63,6 +80,11 @@ class IpGuard
     end
 
     attr_accessor :redis_client
+    attr_writer :logger
+
+    def logger
+      @logger ||= Logger.new(IO::NULL)
+    end
 
     def blacklists
       @blacklists ||= {}

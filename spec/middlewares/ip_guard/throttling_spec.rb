@@ -8,9 +8,7 @@ describe ::IpGuard::Throttler do
 
 
   before do
-    IpGuard.throttle('everything', limit: limit, period: period) do |req|
-      req.ip
-    end
+    IpGuard.throttle('everything', limit: limit, period: period)
   end
 
   it 'allows only limited count of requests' do

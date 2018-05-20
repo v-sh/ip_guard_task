@@ -13,6 +13,8 @@ class IpGuard
 
       cnt, expires = incr(matched, period(req))
       if cnt > limit(req)
+        req.env["ip_guard.throttled"] = @name
+        req.env["ip_guard.client_ip"] = req.ip
         [true, expires]
       else
         [false, 0]

@@ -23,7 +23,7 @@ describe IpGuard::Matcher do
       context 'called with matching ip' do
         it 'returns true' do
           expect(matcher.(request)).to eq(true)
-          expect(request.env["throttler.matched.whitelist"]).to eq('1.2.3.4')
+          expect(request.env["ip_guard.whitelist"]).to eq('1.2.3.4')
         end
       end
 
@@ -31,7 +31,7 @@ describe IpGuard::Matcher do
         let(:ip) { '1.2.3.5' }
         it 'returns false' do
           expect(matcher.(request)).to eq(false)
-          expect(request.env["throttler.matched.whitelist"]).to be_nil
+          expect(request.env["ip_guard.whitelist"]).to be_nil
         end
       end
     end
@@ -43,7 +43,7 @@ describe IpGuard::Matcher do
       context 'called with matching ip' do
         it 'returns true' do
           expect(matcher.(request)).to eq(true)
-          expect(request.env["throttler.matched.whitelist"]).to eq('1.2.3.0/24')
+          expect(request.env["ip_guard.whitelist"]).to eq('1.2.3.0/24')
         end
       end
 
@@ -51,7 +51,7 @@ describe IpGuard::Matcher do
         let(:ip) { '1.2.4.0' }
         it 'returns false' do
           expect(matcher.(request)).to eq(false)
-          expect(request.env["throttler.matched.whitelist"]).to be_nil
+          expect(request.env["ip_guard.whitelist"]).to be_nil
         end
       end
     end

@@ -9,7 +9,8 @@ class IpGuard
     def call(req)
       matched = @block.(req)
       if matched
-        req.env["throttler.matched.#{@type}"] = @name
+        req.env["ip_guard.#{@type}"] = @name
+        req.env["ip_guard.client_ip"] = req.ip
       end
       matched
     end
