@@ -6,7 +6,6 @@ describe ::IpGuard::Throttler do
   let(:limit) { 2 }
   let(:period) { 1 }
 
-
   before do
     IpGuard.throttle('everything', limit: limit, period: period)
   end
@@ -75,11 +74,11 @@ describe ::IpGuard::Throttler do
     after do
       IpGuard.logger = nil
     end
+
     it 'allows everything and log fails' do
       expect(logger).to receive(:error).twice.with(/IpGuard: cannot connect to redis/)
       expect(make_request(with_ip: '1.2.3.4').first).to eq(200)
       expect(make_request(with_ip: '1.2.3.4').first).to eq(200)
     end
-
   end
 end
