@@ -6,6 +6,7 @@ describe ::IpGuard::Throttler do
   let(:limit) { 2 }
   let(:period) { 1 }
 
+
   before do
     IpGuard.throttle('everything', limit: limit, period: period) do |req|
       req.ip
@@ -30,6 +31,40 @@ describe ::IpGuard::Throttler do
       expect(app).to receive(:call).exactly(2).times.with(hash_including("HTTP_X_FORWARDED_FOR"=>"1.2.3.5"))
       3.times{ make_request(with_ip: '1.2.3.5') }
       3.times{ make_request(with_ip: '1.2.3.4') }
+    end
+  end
+
+  context 'with proc for limit' do
+    let(:limit) do
+      Proc.new do |req|
+        req.ip == '1.2.3.5' ? 3 : 1
+      end
+    end
+
+    it 'use different limits' do
+      expect(app).to receive(:call).exactly(1).times.with(hash_including("HTTP_X_FORWARDED_FOR"=>"1.2.3.4"))
+      expect(app).to receive(:call).exactly(3).times.with(hash_including("HTTP_X_FORWARDED_FOR"=>"1.2.3.5"))
+      5.times{ make_request(with_ip: '1.2.3.5') }
+      5.times{ make_request(with_ip: '1.2.3.4') }
+    end
+  end
+
+  context 'with proc for period' do
+    let(:period) do
+      Proc.new do |req|
+        req.ip == '1.2.3.5' ? 3 : 1
+      end
+    end
+    let(:limit) { 1 }
+
+    it 'use different periods' do
+      expect(make_request(with_ip: '1.2.3.4').first).to eq(200)
+      expect(make_request(with_ip: '1.2.3.4').first).to eq(429)
+      expect(make_request(with_ip: '1.2.3.5').first).to eq(200)
+      expect(make_request(with_ip: '1.2.3.5').first).to eq(429)
+      sleep(2)
+      expect(make_request(with_ip: '1.2.3.4').first).to eq(200)
+      expect(make_request(with_ip: '1.2.3.5').first).to eq(429)
     end
   end
 end
