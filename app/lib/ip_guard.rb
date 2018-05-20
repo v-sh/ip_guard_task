@@ -75,6 +75,5 @@ class IpGuard
     def throttlers
       @throttles ||= {}
     end
-
   end
 end
