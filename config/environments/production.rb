@@ -92,3 +92,5 @@ Rails.application.configure do
   # Do not dump schema after migrations.
   config.active_record.dump_schema_after_migration = false
 end
+
+IpGuard.throttle 'throttle everything', limit: 100, period: 1.hour

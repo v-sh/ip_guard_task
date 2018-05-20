@@ -10,11 +10,11 @@ class IpGuard
 
     return @app.(env) if self.class.whitelisted?(req)
 
-    return [429, {}, "Rate limit exceeded. Try again in #{1.day} seconds"] if self.class.blacklisted?(req)
+    return [429, {'Content-Type' => 'text/plain'}, ["Rate limit exceeded. Try again in #{1.day} seconds"]] if self.class.blacklisted?(req)
 
     throttled, expires = self.class.throttled?(req)
     if throttled
-      [429, {}, "Rate limit exceeded. Try again in #{expires} seconds"]
+      [429, {'Content-Type' => 'text/plain'}, ["Rate limit exceeded. Try again in #{expires} seconds"]]
     else
       @app.(env)
     end
