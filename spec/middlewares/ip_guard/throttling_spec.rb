@@ -77,8 +77,32 @@ describe ::IpGuard::Throttler do
 
     it 'allows everything and log fails' do
       expect(logger).to receive(:error).twice.with(/IpGuard: cannot connect to redis/)
-      expect(make_request(with_ip: '1.2.3.4').first).to eq(200)
-      expect(make_request(with_ip: '1.2.3.4').first).to eq(200)
+      expect(make_request.first).to eq(200)
+      expect(make_request.first).to eq(200)
     end
   end
+
+  context 'with user defined proc' do
+    before do
+      IpGuard.clear!
+      IpGuard.throttle 'nothing', limit: 2, period: 1 do |req|
+        token = req.params["access_token"]
+        token == 'CEO token' ? false : token
+      end
+    end
+    context 'block returning false' do
+      it 'allows everything' do
+        expect(make_request(params: {access_token: '123'}).first).to eq(200)
+        expect(make_request(params: {access_token: '123'}).first).to eq(200)
+        expect(make_request(params: {access_token: '123'}).first).to eq(429)
+        expect(make_request(params: {access_token: '321'}).first).to eq(200)
+        expect(make_request(params: {access_token: '321'}).first).to eq(200)
+        expect(make_request(params: {access_token: '321'}).first).to eq(429)
+        expect(make_request(params: {access_token: 'CEO token'}).first).to eq(200)
+        expect(make_request(params: {access_token: 'CEO token'}).first).to eq(200)
+        expect(make_request(params: {access_token: 'CEO token'}).first).to eq(200)
+      end
+    end
+  end
+
 end

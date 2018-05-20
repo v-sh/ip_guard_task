@@ -1,7 +1,7 @@
 # IpGuard
 test task
-1) one controller returns 'ok'
-2) throttle requests(100 requests per 1 hour)
+* one controller returns 'ok'
+* throttle requests(100 requests per 1 hour)
 
 # run in development mode
 
@@ -21,8 +21,11 @@ bundle exec rails s
 * throttling
 * dynamic period and limit
 * dynamic client_ids
+* redis a storage
+* logging
+* tolerant to rails unavailability
 
-# usage
+# Usage
 ```ruby
 IpGuard.whitelist '1.2.3.4'
 IpGuard.whitelist '1.2.3.0/24'
@@ -32,7 +35,7 @@ end
 #same for blacklists
 IpGuard.blacklist '1.2.3.4'
 
-#throttling
+# throttling
 IpGuard.throttle 'name', limit: 10, period: 5.seconds
 IpGuard.throttle 'name', limit: 10, period: 5.seconds do |req|
   req.ip # client id for throttling
@@ -40,3 +43,7 @@ end
 IpGuard.throttle 'name', limit: 10, period: Proc.new{|req| req.ip == '1.2.3.4' ? 10 : 60}
 IpGuard.throttle 'name', period: 10, limit: Proc.new{|req| req.ip == '1.2.3.4' ? 10 : 60}
 ```
+
+# Inspired by
+* https://redis.io/commands/incr
+* Rack::Attack
