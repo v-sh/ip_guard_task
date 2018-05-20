@@ -27,8 +27,8 @@ describe ::IpGuard::Throttler do
 
   context 'for different clients' do
     it 'keeps different counters' do
-      expect(app).to receive(:call).exactly(2).times.with(hash_including("HTTP_X_FORWARDED_FOR"=>"1.2.3.4"))
-      expect(app).to receive(:call).exactly(2).times.with(hash_including("HTTP_X_FORWARDED_FOR"=>"1.2.3.5"))
+      expect(app).to receive(:call).exactly(2).times.with(hash_including("HTTP_X_FORWARDED_FOR"=>"1.2.3.4")).and_call_original
+      expect(app).to receive(:call).exactly(2).times.with(hash_including("HTTP_X_FORWARDED_FOR"=>"1.2.3.5")).and_call_original
       3.times{ make_request(with_ip: '1.2.3.5') }
       3.times{ make_request(with_ip: '1.2.3.4') }
     end
@@ -42,8 +42,8 @@ describe ::IpGuard::Throttler do
     end
 
     it 'use different limits' do
-      expect(app).to receive(:call).exactly(1).times.with(hash_including("HTTP_X_FORWARDED_FOR"=>"1.2.3.4"))
-      expect(app).to receive(:call).exactly(3).times.with(hash_including("HTTP_X_FORWARDED_FOR"=>"1.2.3.5"))
+      expect(app).to receive(:call).exactly(1).times.with(hash_including("HTTP_X_FORWARDED_FOR"=>"1.2.3.4")).and_call_original
+      expect(app).to receive(:call).exactly(3).times.with(hash_including("HTTP_X_FORWARDED_FOR"=>"1.2.3.5")).and_call_original
       5.times{ make_request(with_ip: '1.2.3.5') }
       5.times{ make_request(with_ip: '1.2.3.4') }
     end
