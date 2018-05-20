@@ -32,6 +32,10 @@ class IpGuard
         return {current, ttl}
       LUA
       _current, _ttl = redis_client.eval(function, [key(client_id), period])
+    rescue Redis::CannotConnectError => e
+      msg = "IpGuard: cannot connect to redis #{e}"
+      IpGuard.logger.error(msg)
+      [0, 1]
     end
 
     def period(req)

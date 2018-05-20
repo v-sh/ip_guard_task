@@ -65,4 +65,21 @@ describe ::IpGuard::Throttler do
       expect(make_request(with_ip: '1.2.3.5').first).to eq(429)
     end
   end
+
+  context 'when redis is unavailable' do
+    let(:logger) { Logger.new(IO::NULL)  }
+    before do
+      allow(IpGuard).to receive(:redis_client).and_return( Redis.new(url: "redis://127.0.0.1:1234/10"))
+      IpGuard.logger = logger
+    end
+    after do
+      IpGuard.logger = nil
+    end
+    it 'allows everything and log fails' do
+      expect(logger).to receive(:error).twice.with(/IpGuard: cannot connect to redis/)
+      expect(make_request(with_ip: '1.2.3.4').first).to eq(200)
+      expect(make_request(with_ip: '1.2.3.4').first).to eq(200)
+    end
+
+  end
 end

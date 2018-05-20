@@ -23,6 +23,7 @@ describe ::IpGuard::Throttler do
     expect(logger).to receive(:info).with("IpGuard: 1.2.3.4 is blocked by '1.2.3.4'")
     make_request
   end
+
   it 'write to log when block client by blacklist' do
     IpGuard.throttle('everything', limit: limit, period: period)
     expect(logger).to receive(:info).once.with("IpGuard: 1.2.3.4 was throttled by 'everything'")
